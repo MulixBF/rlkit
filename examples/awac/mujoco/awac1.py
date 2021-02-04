@@ -2,7 +2,7 @@ from rlkit.demos.source.dict_to_mdp_path_loader import DictToMDPPathLoader
 from rlkit.launchers.experiments.awac.awac_rl import experiment, process_args
 
 import rlkit.util.hyperparameter as hyp
-from rlkit.launchers.launcher_util import run_experiment
+from rlkit.launchers.launcher_util import run_experiment_here
 
 from rlkit.torch.sac.policies import GaussianPolicy
 from rlkit.torch.networks import Clamp
@@ -99,12 +99,12 @@ if __name__ == "__main__":
 
     for exp_id, variant in enumerate(sweeper.iterate_hyperparameters()):
         for _ in range(n_seeds):
-            run_experiment(
+            run_experiment_here(
                 experiment,
                 exp_prefix=exp_prefix,
                 mode=mode,
                 variant=variant,
-                use_gpu=use_gpu,
+                use_gpu=False,
                 snapshot_gap=200,
                 snapshot_mode='gap_and_last',
                 num_exps_per_instance=3,

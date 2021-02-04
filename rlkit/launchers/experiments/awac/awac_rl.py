@@ -45,12 +45,12 @@ ENV_PARAMS = {
         'num_expl_steps_per_train_loop': 1000,
         'max_path_length': 1000,
         'env_demo_path': dict(
-            path="demos/icml2020/mujoco/hc_action_noise_15.npy",
+            path="data/mujoco/hc_action_noise_15.npy",
             obs_dict=False,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/mujoco/hc_off_policy_15_demos_100.npy",
+            path="data/mujoco/hc_off_policy_15_demos_100.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,
@@ -60,12 +60,12 @@ ENV_PARAMS = {
         'num_expl_steps_per_train_loop': 1000,
         'max_path_length': 1000,
         'env_demo_path': dict(
-            path="demos/icml2020/mujoco/ant_action_noise_15.npy",
+            path="data/mujoco/ant_action_noise_15.npy",
             obs_dict=False,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/mujoco/ant_off_policy_15_demos_100.npy",
+            path="data/mujoco/ant_off_policy_15_demos_100.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,
@@ -75,12 +75,12 @@ ENV_PARAMS = {
         'num_expl_steps_per_train_loop': 1000,
         'max_path_length': 1000,
         'env_demo_path': dict(
-            path="demos/icml2020/mujoco/walker_action_noise_15.npy",
+            path="data/mujoco/walker_action_noise_15.npy",
             obs_dict=False,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/mujoco/walker_off_policy_15_demos_100.npy",
+            path="data/mujoco/walker_off_policy_15_demos_100.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,
@@ -98,12 +98,12 @@ ENV_PARAMS = {
         'env_id': 'pen-binary-v0',
         'max_path_length': 200,
         'env_demo_path': dict(
-            path="demos/icml2020/hand/pen2_sparse.npy",
+            path="data/hand/pen2_sparse.npy",
             obs_dict=True,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/hand/pen_bc_sparse4.npy",
+            path="data/hand/pen_bc_sparse4.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,
@@ -113,12 +113,12 @@ ENV_PARAMS = {
         'env_id': 'door-binary-v0',
         'max_path_length': 200,
         'env_demo_path': dict(
-            path="demos/icml2020/hand/door2_sparse.npy",
+            path="data/hand/door2_sparse.npy",
             obs_dict=True,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/hand/door_bc_sparse4.npy",
+            path="data/hand/door_bc_sparse4.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,
@@ -128,12 +128,12 @@ ENV_PARAMS = {
         'env_id': 'relocate-binary-v0',
         'max_path_length': 200,
         'env_demo_path': dict(
-            path="demos/icml2020/hand/relocate2_sparse.npy",
+            path="data/hand/relocate2_sparse.npy",
             obs_dict=True,
             is_demo=True,
         ),
         'env_offpolicy_data_path': dict(
-            path="demos/icml2020/hand/relocate_bc_sparse4.npy",
+            path="data/hand/relocate_bc_sparse4.npy",
             obs_dict=False,
             is_demo=False,
             train_split=0.9,

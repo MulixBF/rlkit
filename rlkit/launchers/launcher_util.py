@@ -184,6 +184,7 @@ def create_log_dir(
         seed=0,
         base_log_dir=None,
         include_exp_prefix_sub_dir=True,
+        **kwargs
 ):
     """
     Creates and returns a unique log directory.

@@ -52,7 +52,7 @@ RUN_DOODAD_EXPERIMENT_SCRIPT_PATH = (
 AWS Settings
 """
 # If not set, default will be chosen by doodad
-# AWS_S3_PATH = 's3://bucket/directory
+AWS_S3_PATH = None 
 
 # The docker image is looked up on dockerhub.com.
 DOODAD_DOCKER_IMAGE = "TODO"
