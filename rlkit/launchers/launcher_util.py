@@ -6,6 +6,7 @@ import pickle
 import random
 import sys
 import time
+
 from collections import namedtuple
 
 import __main__ as main
