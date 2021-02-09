@@ -1,6 +1,6 @@
 import os
 
-from gym.spaces import Box, Discrete, Tuple
+from gym.spaces import Box, Discrete, Tuple, Dict
 
 ENV_ASSET_DIR = os.path.join(os.path.dirname(__file__), 'assets')
 
@@ -12,6 +12,8 @@ def get_asset_full_path(file_name):
 def get_dim(space):
     if isinstance(space, Box):
         return space.low.size
+    elif isinstance(space, Dict):
+        return sum(s.low.size for s in space.spaces.values())
     elif isinstance(space, Discrete):
         return space.n
     elif isinstance(space, Tuple):

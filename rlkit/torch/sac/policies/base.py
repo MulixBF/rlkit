@@ -24,11 +24,20 @@ class TorchStochasticPolicy(
     ExplorationPolicy, metaclass=abc.ABCMeta
 ):
     def get_action(self, obs_np, ):
-        actions = self.get_actions(obs_np[None])
-        return actions[0, :], {}
+        actions = self.get_actions(obs_np)
+
+        if len(actions.shape) > 1:
+            actions = actions[0, :]
+        return actions, {}
 
     def get_actions(self, obs_np, ):
-        dist = self._get_dist_from_np(obs_np)
+        if isinstance(obs_np, dict):
+            dist = self._get_dist_from_np(np.concatenate([
+                v for k, v in obs_np.items()
+            ]))
+        else:
+            dist = self._get_dist_from_np(obs_np[None])
+
         actions = dist.sample()
         return elem_or_tuple_to_numpy(actions)
 

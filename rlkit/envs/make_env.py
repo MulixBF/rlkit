@@ -40,7 +40,9 @@ def make(env_id=None, env_class=None, env_kwargs=None, normalize_env=True):
         env = gym.make(env_id)
     elif env_id:
         env = gym.make(env_id)
-    env = env.env # unwrap TimeLimit
+
+    if hasattr(env, 'env'):
+        env = env.env # unwrap TimeLimit
 
     if normalize_env:
         env = NormalizedBoxEnv(env)

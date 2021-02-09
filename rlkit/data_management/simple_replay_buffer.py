@@ -44,6 +44,13 @@ class SimpleReplayBuffer(ReplayBuffer):
 
     def add_sample(self, observation, action, reward, next_observation,
                    terminal, env_info, **kwargs):
+
+        if isinstance(observation, dict):
+            observation = np.concatenate([v for v in observation.values()])
+
+        if isinstance(next_observation, dict):
+            next_observation = np.concatenate([v for v in next_observation.values()])
+
         self._observations[self._top] = observation
         self._actions[self._top] = action
         self._rewards[self._top] = reward
@@ -95,5 +102,8 @@ class SimpleReplayBuffer(ReplayBuffer):
 
     def get_diagnostics(self):
         return OrderedDict([
-            ('size', self._size)
+            ('size', self._size),
+            ('Rewards mean', np.mean(self._rewards)),
+            ('Rewards max', np.max(self._rewards)),
+            ('Terminals mean', np.mean(self._terminals))
         ])

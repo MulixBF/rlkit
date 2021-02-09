@@ -273,16 +273,16 @@ class AWACTrainer(TorchTrainer):
             test_policy_loss, test_logp_loss, test_mse_loss, test_stats = self.run_bc_batch(test_buffer, policy)
             test_policy_loss = test_policy_loss * self.bc_weight
 
-            if i % self.pretraining_logging_period==0:
+            if i % self.pretraining_logging_period == 0:
                 stats = {
-                "pretrain_bc/batch": i,
-                "pretrain_bc/Train Logprob Loss": ptu.get_numpy(train_logp_loss),
-                "pretrain_bc/Test Logprob Loss": ptu.get_numpy(test_logp_loss),
-                "pretrain_bc/Train MSE": ptu.get_numpy(train_mse_loss),
-                "pretrain_bc/Test MSE": ptu.get_numpy(test_mse_loss),
-                "pretrain_bc/train_policy_loss": ptu.get_numpy(train_policy_loss),
-                "pretrain_bc/test_policy_loss": ptu.get_numpy(test_policy_loss),
-                "pretrain_bc/epoch_time":time.time()-prev_time,
+                    "pretrain_bc/batch": i,
+                    "pretrain_bc/Train Logprob Loss": ptu.get_numpy(train_logp_loss),
+                    "pretrain_bc/Test Logprob Loss": ptu.get_numpy(test_logp_loss),
+                    "pretrain_bc/Train MSE": ptu.get_numpy(train_mse_loss),
+                    "pretrain_bc/Test MSE": ptu.get_numpy(test_mse_loss),
+                    "pretrain_bc/train_policy_loss": ptu.get_numpy(train_policy_loss),
+                    "pretrain_bc/test_policy_loss": ptu.get_numpy(test_policy_loss),
+                    "pretrain_bc/epoch_time": time.time()-prev_time,
                 }
 
                 logger.record_dict(stats)
@@ -491,11 +491,11 @@ class AWACTrainer(TorchTrainer):
         target_q_values = torch.min(
             self.target_qf1(next_obs, new_next_actions),
             self.target_qf2(next_obs, new_next_actions),
-        ) - alpha * new_log_pi
+        ).flatten() - alpha * new_log_pi
 
         q_target = self.reward_scale * rewards + (1. - terminals) * self.discount * target_q_values
-        qf1_loss = self.qf_criterion(q1_pred, q_target.detach())
-        qf2_loss = self.qf_criterion(q2_pred, q_target.detach())
+        qf1_loss = self.qf_criterion(q1_pred.flatten(), q_target.detach())
+        qf2_loss = self.qf_criterion(q2_pred.flatten(), q_target.detach())
 
         """
         Policy Loss
@@ -637,6 +637,7 @@ class AWACTrainer(TorchTrainer):
 
         if self.use_awr_update and self.weight_loss:
             policy_loss = policy_loss + self.awr_weight * (-policy_logpp * len(weights)*weights.detach()).mean()
+
         elif self.use_awr_update:
             policy_loss = policy_loss + self.awr_weight * (-policy_logpp).mean()
 
@@ -647,8 +648,6 @@ class AWACTrainer(TorchTrainer):
         if self.compute_bc:
             train_policy_loss, train_logp_loss, train_mse_loss, _ = self.run_bc_batch(self.demo_train_buffer, self.policy)
             policy_loss = policy_loss + self.bc_weight * train_policy_loss
-
-
 
         if not pretrain and self.buffer_policy_reset_period > 0 and self._n_train_steps_total % self.buffer_policy_reset_period==0:
             del self.buffer_policy_optimizer

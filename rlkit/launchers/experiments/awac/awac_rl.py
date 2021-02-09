@@ -1,6 +1,8 @@
 import gym
 # import roboverse
 # from rlkit.data_management.awr_env_replay_buffer import AWREnvReplayBuffer
+from gym.spaces import Dict
+
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.split_buffer import SplitReplayBuffer
 from rlkit.envs.wrappers import NormalizedBoxEnv, StackObservationEnv, RewardWrapperEnv
@@ -185,6 +187,7 @@ def experiment(variant):
 
     if variant.get('add_env_demos', False):
         variant["path_loader_kwargs"]["demo_paths"].append(variant["env_demo_path"])
+
     if variant.get('add_env_offpolicy_data', False):
         variant["path_loader_kwargs"]["demo_paths"].append(variant["env_offpolicy_data_path"])
 
@@ -194,7 +197,11 @@ def experiment(variant):
         expl_env = StackObservationEnv(expl_env, stack_obs=stack_obs)
         eval_env = StackObservationEnv(eval_env, stack_obs=stack_obs)
 
-    obs_dim = expl_env.observation_space.low.size
+    if isinstance(expl_env.observation_space, Dict):
+        obs_dim = sum(v.low.size for v in expl_env.observation_space.spaces.values())
+    else:
+        obs_dim = expl_env.observation_space.low.size
+
     action_dim = eval_env.action_space.low.size
 
     if hasattr(expl_env, 'info_sizes'):
