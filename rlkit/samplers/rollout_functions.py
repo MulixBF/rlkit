@@ -113,6 +113,7 @@ def rollout(
         next_o, r, d, env_info = env.step(copy.deepcopy(a))
         if render:
             env.render(**render_kwargs)
+
         observations.append(o)
         rewards.append(r)
         terminals.append(d)

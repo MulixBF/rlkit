@@ -1,14 +1,8 @@
-import os.path as osp
-import pickle
-
 from gym.spaces import Dict
 
 import rlkit.torch.pytorch_util as ptu
-from rlkit.core import logger
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.split_buffer import SplitReplayBuffer
-from rlkit.demos.source.hdf5_path_loader import HDF5PathLoader
-from rlkit.demos.source.mdp_path_loader import MDPPathLoader
 from rlkit.envs.make_env import make
 from rlkit.envs.wrappers import StackObservationEnv
 from rlkit.exploration_strategies.base import PolicyWrappedWithExplorationStrategy
@@ -145,37 +139,6 @@ def experiment(variant):
     demo_test_buffer = EnvReplayBuffer(
         **replay_buffer_kwargs,
     )
-
-    if variant.get('load_demos', False):
-        path_loader_class = variant.get('path_loader_class', MDPPathLoader)
-        path_loader = path_loader_class(
-            trainer,
-            replay_buffer=replay_buffer,
-            demo_train_buffer=demo_train_buffer,
-            demo_test_buffer=demo_test_buffer,
-            **path_loader_kwargs
-        )
-        path_loader.load_demos()
-
-    if variant.get('load_env_dataset_demos', False):
-        path_loader_class = variant.get('path_loader_class', HDF5PathLoader)
-        path_loader = path_loader_class(
-            trainer,
-            replay_buffer=replay_buffer,
-            demo_train_buffer=demo_train_buffer,
-            demo_test_buffer=demo_test_buffer,
-            **path_loader_kwargs
-        )
-        path_loader.load_demos(expl_env.get_dataset())
-
-    if variant.get('save_initial_buffers', False):
-        buffers = dict(
-            replay_buffer=replay_buffer,
-            demo_train_buffer=demo_train_buffer,
-            demo_test_buffer=demo_test_buffer,
-        )
-        buffer_path = osp.join(logger.get_snapshot_dir(), 'buffers.p')
-        pickle.dump(buffers, open(buffer_path, "wb"))
 
     if variant.get('pretrain_buffer_policy', False):
         trainer.pretrain_policy_with_bc(

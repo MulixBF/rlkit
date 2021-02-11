@@ -235,10 +235,8 @@ class AWACTrainer(TorchTrainer):
         batch = self.get_batch_from_buffer(replay_buffer, self.bc_batch_size)
         o = batch["observations"]
         u = batch["actions"]
-        # g = batch["resampled_goals"]
-        # og = torch.cat((o, g), dim=1)
+
         og = o
-        # pred_u, *_ = self.policy(og)
         dist = policy(og)
         pred_u, log_pi = dist.rsample_and_logprob()
         stats = dist.get_diagnostics()
@@ -474,6 +472,7 @@ class AWACTrainer(TorchTrainer):
             alpha_loss.backward()
             self.alpha_optimizer.step()
             alpha = self.log_alpha.exp()
+
         else:
             alpha_loss = 0
             alpha = self.alpha
@@ -494,6 +493,9 @@ class AWACTrainer(TorchTrainer):
         q_target = self.reward_scale * rewards + (1. - terminals) * self.discount * target_q_values
         qf1_loss = self.qf_criterion(q1_pred.flatten(), q_target.detach())
         qf2_loss = self.qf_criterion(q2_pred.flatten(), q_target.detach())
+
+        if qf1_loss > 100 or qf2_loss > 100:
+            print('Outlier loss')
 
         """
         Policy Loss
@@ -532,6 +534,7 @@ class AWACTrainer(TorchTrainer):
                 q_adv = q_new_actions
             else:
                 q_adv = qf1_new_actions
+
         elif self.buffer_policy_sample_actions:
             buf_dist = self.buffer_policy(obs)
             u, _ = buf_dist.rsample_and_logprob()
@@ -570,7 +573,9 @@ class AWACTrainer(TorchTrainer):
             score = q_adv - v_pi
             if self.mask_positive_advantage:
                 score = torch.sign(score)
+
         elif self.normalize_over_state == "Z":
+
             buffer_dist = self.buffer_policy(obs)
             K = self.Z_K
             buffer_obs = []
@@ -587,7 +592,6 @@ class AWACTrainer(TorchTrainer):
                 log_pis.append(log_pi)
             buffer_obs = torch.cat(buffer_obs, 0)
             buffer_actions = torch.cat(buffer_actions, 0)
-            p_buffer = torch.exp(torch.cat(log_bs, 0).sum(dim=1, ))
             log_pi = torch.cat(log_pis, 0)
             log_pi = log_pi.sum(dim=1, )
             q1_b = self.qf1(buffer_obs, buffer_actions)
@@ -595,24 +599,19 @@ class AWACTrainer(TorchTrainer):
             q_b = torch.min(q1_b, q2_b)
             q_b = torch.reshape(q_b, (-1, K))
             adv_b = q_b - v_pi
-            # if self._n_train_steps_total % 100 == 0:
-            #     import ipdb; ipdb.set_trace()
-            # Z = torch.exp(adv_b / beta).mean(dim=1, keepdim=True)
-            # score = torch.exp((q_adv - v_pi) / beta) / Z
-            # score = score / sum(score)
+
             logK = torch.log(ptu.tensor(float(K)))
             logZ = torch.logsumexp(adv_b/beta - logK, dim=1, keepdim=True)
             logS = (q_adv - v_pi)/beta - logZ
-            # logZ = torch.logsumexp(q_b/beta - logK, dim=1, keepdim=True)
-            # logS = q_adv/beta - logZ
-            score = F.softmax(logS, dim=0) # score / sum(score)
+            score = F.softmax(logS, dim=0)
         else:
-            error
+            raise ValueError
 
         if self.clip_score is not None:
             score = torch.clamp(score, max=self.clip_score)
 
         if self.weight_loss and weights is None:
+
             if self.normalize_over_batch == True:
                 weights = F.softmax(score / beta, dim=0)
             elif self.normalize_over_batch == "whiten":
@@ -627,9 +626,9 @@ class AWACTrainer(TorchTrainer):
             elif self.normalize_over_batch == False:
                 weights = score
             else:
-                error
-        weights = weights[:, 0]
+                raise NotImplementedError
 
+        weights = weights[:, 0]
         policy_loss = alpha * log_pi.mean()
 
         if self.use_awr_update and self.weight_loss:
@@ -715,20 +714,24 @@ class AWACTrainer(TorchTrainer):
         if self._n_train_steps_total % self.q_update_period == 0:
             self.qf1_optimizer.zero_grad()
             qf1_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.qf1.parameters(), max_norm=1.0)
             self.qf1_optimizer.step()
 
             self.qf2_optimizer.zero_grad()
             qf2_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.qf2.parameters(), max_norm=1.0)
             self.qf2_optimizer.step()
 
         if self._n_train_steps_total % self.policy_update_period == 0 and self.update_policy:
             self.policy_optimizer.zero_grad()
             policy_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.policy.parameters(), max_norm=1.0)
             self.policy_optimizer.step()
 
         if self.train_bc_on_rl_buffer and self._n_train_steps_total % self.policy_update_period == 0 :
             self.buffer_policy_optimizer.zero_grad()
             buffer_policy_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.buffer_policy.parameters(), max_norm=1.0)
             self.buffer_policy_optimizer.step()
 
 
