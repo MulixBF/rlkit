@@ -378,7 +378,7 @@ class AWACTrainer(TorchTrainer):
         obs = batch['observations']
         actions = batch['actions']
         next_obs = batch['next_observations']
-        weights = batch.get('weights', None)
+
         if self.reward_transform:
             rewards = self.reward_transform(rewards)
 
@@ -390,13 +390,10 @@ class AWACTrainer(TorchTrainer):
         """
         dist = self.policy(obs)
         new_obs_actions, log_pi = dist.rsample_and_logprob()
-        policy_mle = dist.mle_estimate()
 
         if self.use_automatic_entropy_tuning:
-            alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
             alpha = self.log_alpha.exp()
         else:
-            alpha_loss = 0
             alpha = self.alpha
 
         q1_pred = self.qf1(obs, actions)
@@ -453,6 +450,7 @@ class AWACTrainer(TorchTrainer):
         actions = batch['actions']
         next_obs = batch['next_observations']
         weights = batch.get('weights', None)
+
         if self.reward_transform:
             rewards = self.reward_transform(rewards)
 
@@ -524,7 +522,6 @@ class AWACTrainer(TorchTrainer):
                     vs.append(v)
                 v_pi = torch.cat(vs, 1).mean(dim=1)
             else:
-                # v_pi = self.qf1(obs, new_obs_actions)
                 v1_pi = self.qf1(obs, new_obs_actions)
                 v2_pi = self.qf2(obs, new_obs_actions)
                 v_pi = torch.min(v1_pi, v2_pi)
@@ -686,6 +683,7 @@ class AWACTrainer(TorchTrainer):
                     self.buffer_policy_optimizer.step()
 
         if self.train_bc_on_rl_buffer:
+
             if self.advantage_weighted_buffer_loss:
                 buffer_dist = self.buffer_policy(obs)
                 buffer_u = actions
@@ -704,6 +702,7 @@ class AWACTrainer(TorchTrainer):
                 buffer_score = buffer_q_adv - buffer_v_pi
                 buffer_weights = F.softmax(buffer_score / beta, dim=0)
                 buffer_policy_loss = self.awr_weight * (-buffer_policy_logpp * len(buffer_weights)*buffer_weights.detach()).mean()
+
             else:
                 buffer_policy_loss, buffer_train_logp_loss, buffer_train_mse_loss, _ = self.run_bc_batch(
                     self.replay_buffer.train_replay_buffer, self.buffer_policy)

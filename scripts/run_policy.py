@@ -1,18 +1,26 @@
-from rlkit.samplers.rollout_functions import rollout
-from rlkit.torch.pytorch_util import set_gpu_mode
 import argparse
 import torch
 import uuid
+import gym
+
+from rlkit.samplers.rollout_functions import rollout
+from rlkit.torch.pytorch_util import set_gpu_mode
 from rlkit.core import logger
+
 
 filename = str(uuid.uuid4())
 
 
 def simulate_policy(args):
-    data = torch.load(args.file)
+    data = torch.load(args.file, map_location='cpu')
     policy = data['evaluation/policy']
-    env = data['evaluation/env']
+    if args.env is not None:
+        env = gym.make(args.env)
+    else:
+        env = data['evaluation/env']
+
     print("Policy loaded")
+
     if args.gpu:
         set_gpu_mode(True)
         policy.cuda()
@@ -34,6 +42,7 @@ if __name__ == "__main__":
                         help='path to the snapshot file')
     parser.add_argument('--H', type=int, default=300,
                         help='Max length of rollout')
+    parser.add_argument('--env', type=str, default=None)
     parser.add_argument('--gpu', action='store_true')
     args = parser.parse_args()
 

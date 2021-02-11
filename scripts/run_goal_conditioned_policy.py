@@ -8,7 +8,7 @@ from rlkit.envs.vae_wrapper import VAEWrappedEnv
 
 
 def simulate_policy(args):
-    data = torch.load(args.file)
+    data = torch.load(args.file, map_location='cpu')
     policy = data['evaluation/policy']
     env = data['evaluation/env']
     print("Policy and environment loaded")
