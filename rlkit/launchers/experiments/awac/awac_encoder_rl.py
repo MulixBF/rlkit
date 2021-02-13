@@ -9,6 +9,8 @@ from gym.envs.mujoco import (
 )
 from gym.envs.classic_control import PendulumEnv
 import gym
+import gym.wrappers
+
 
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.envs.wrappers import NormalizedBoxEnv, StackObservationEnv
@@ -77,7 +79,6 @@ ENV_PARAMS = {
         'max_path_length': 1000,
         'num_epochs': 2000,
     },
-
     'pen-v0': {
         'env_id': 'pen-v0',
         # 'num_expl_steps_per_train_loop': 1000,
@@ -110,12 +111,15 @@ def experiment(variant):
     variant.update(env_params)
 
     if 'env_id' in env_params:
-
         expl_env = gym.make(env_params['env_id'])
         eval_env = gym.make(env_params['env_id'])
     else:
         expl_env = NormalizedBoxEnv(variant['env_class']())
         eval_env = NormalizedBoxEnv(variant['env_class']())
+
+    if 'env_time_limit' in env_params:
+        expl_env = gym.wrappers.TimeLimit(expl_env, env_params['env_time_limit'])
+        eval_env = gym.wrappers.TimeLimit(eval_env, env_params['env_time_limit'])
 
     path_loader_kwargs = variant.get("path_loader_kwargs", {})
     stack_obs = path_loader_kwargs.get("stack_obs", 1)
